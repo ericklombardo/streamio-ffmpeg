@@ -45,4 +45,40 @@ module FFMPEG
   def self.ffmpeg_binary
     @ffmpeg_binary || 'ffmpeg'
   end
+
+  def self.run(input_file,output_file,input_options,output_options) 
+    command = "#{FFMPEG.ffmpeg_binary} -y #{input_options} -i #{Shellwords.escape(input_file)} #{output_options} #{Shellwords.escape(output_file)}"
+    FFMPEG.logger.info("Running command...\n#{command}\n")
+    output = ""
+  
+    Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
+  	begin
+  	  yield if block_given?
+  	  next_line = Proc.new do |line|
+  		fix_encoding(line)
+  		output << line
+  		if line.include?("time=")
+  		  if line =~ /time=(\d+):(\d+):(\d+.\d+)/ # ffmpeg 0.8 and above style
+  			time = ($1.to_i * 3600) + ($2.to_i * 60) + $3.to_f
+  		  else # better make sure it wont blow up in case of unexpected output
+  			time = 0.0
+  		  end
+  		  #progress = time / @movie.duration
+  		  yield  if block_given?
+  		end
+  	  end
+  
+  	rescue Timeout::Error => e
+  	  FFMPEG.logger.error "Process hung...\ncommand\n#{command}\nOutput\n#{output}\n"
+  	  raise Error, "Process hung. Full output: #{output}"
+  	end
+    end
+  end
+
+  def self.fix_encoding(output)
+    output[/test/]
+    rescue ArgumentError
+    output.force_encoding("ISO-8859-1")
+  end  
+  
 end
