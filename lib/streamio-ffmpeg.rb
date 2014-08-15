@@ -67,7 +67,9 @@ module FFMPEG
   		  yield  if block_given?
   		end
   	  end
-  
+      
+      FFMPEG.logger.error "Failed encoding...\n#{command}\n\n#{output}\n" unless File.exists?(output_file)
+      
   	rescue Timeout::Error => e
   	  FFMPEG.logger.error "Process hung...\ncommand\n#{command}\nOutput\n#{output}\n"
   	  raise Error, "Process hung. Full output: #{output}"
@@ -77,7 +79,7 @@ module FFMPEG
 
   def self.fix_encoding(output)
     output[/test/]
-    rescue ArgumentError
+  rescue ArgumentError
     output.force_encoding("ISO-8859-1")
   end  
   
