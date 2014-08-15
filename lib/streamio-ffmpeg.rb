@@ -73,7 +73,12 @@ module FFMPEG
   	end
     end
     
-    FFMPEG.logger.error "Failed encoding...\n#{command}\n\n#{output}\n" unless File.exists?(output_file)
+    unless File.exists?(output_file)
+      FFMPEG.logger.error "Failed encoding...\n#{command}\n\n#{output}\n" 
+      return false
+    end  
+    
+    return true
     
   end
 
