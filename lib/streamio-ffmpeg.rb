@@ -67,14 +67,14 @@ module FFMPEG
   		  yield  if block_given?
   		end
   	  end
-      
-      FFMPEG.logger.error "Failed encoding...\n#{command}\n\n#{output}\n" unless File.exists?(output_file)
-      
   	rescue Timeout::Error => e
   	  FFMPEG.logger.error "Process hung...\ncommand\n#{command}\nOutput\n#{output}\n"
   	  raise Error, "Process hung. Full output: #{output}"
   	end
     end
+    
+    FFMPEG.logger.error "Failed encoding...\n#{command}\n\n#{output}\n" unless File.exists?(output_file)
+    
   end
 
   def self.fix_encoding(output)
